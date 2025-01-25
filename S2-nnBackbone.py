@@ -1,12 +1,13 @@
-# Program: Cervical fracture detection of c1-c7
+# Program: Cervical fracture detection of c1-c7, stage 2
 # Author: Mec Glandorff
 # Version: 3.0
-# Description: This program  uses a neural network to detect cervical fractures in the c1-c7 region from CT data.
-#              It combines a backbone CNN or Vision Transformer for feature extraction with a LSTM for sequence modeling. 
+# Description: This program  uses a neural network to detect cervical fractures in the c1-c7 region from CT data. The CT data  
+#              is first segmented in 15 6x224x224 numpy matrices (see more details in configuration class) per vertebra per patient. 
+#              It combines a backbone CNN (or later Vision Transformer) for feature extraction with a LSTM for sequence modeling. 
 #              This gives the benefit that it can detect anomolies/fractures across ct slices. It does so per vertebrae.
-#              I chose to run this on my own pc (RTX 4060) instead of in colab pro, which doesn't make sense 
+#              I chose to run this on my own pc (GPU: RTX 4060) instead of in colab pro+, which doesn't make sense 
 #              from a computational perspective, but it seemed interesting to run it locally. Which gave a whole lot of new 
-#              issues to deal with. Mostly CUDA issues, which were fairly easy to resolve luckily and also you can apparantly
+#              issues to deal with. Mostly CUDA issues, which were fairly easy to resolve and it turns out you can 
 #              crash a pc so hard it fully removes its GPU driver making you think you might have ruined your GPU :3 for a few restarts. 
 
 
