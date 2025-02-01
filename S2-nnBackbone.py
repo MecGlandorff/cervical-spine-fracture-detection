@@ -227,12 +227,12 @@ class TimmModelWithAttention(nn.Module):
             nn.Sigmoid()
         )
 
-        # LSTM layer (Bidirectional)
+        # LSTM layer (bidirectional)
         self.lstm = nn.LSTM(
             input_size=hdim,
             hidden_size=256,    #### Layers & hidden size can be increased to 512 / 3 or 4 if you have the computational power, 
             num_layers=2,       #### more data and (optionally) use a pretaraind transformer as backbone.
-                                #### This will increase the model metrics.  
+                                #### This will likely increase the model metrics.  
             dropout=Config.drop_rate,
             bidirectional=True, 
             batch_first=True
