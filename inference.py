@@ -9,6 +9,9 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 import timm
 
+#Usage:
+#    python inference.py --csv_path inference_data.csv --checkpoint best_model.pth --output_csv predictions.csv
+
 # Program: Cervical fracture detection of c1-c7, inference
 # Author: Mec Glandorff
 # Version: 1.0
@@ -200,5 +203,23 @@ def run_inference(args):
     print(f"Inference complete. Results are now saved to {args.output_csv}")
 
 
+
+###########################################
+# Main: Argument parsing and calling inference
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Inference module for cervical fracture detection")
+    parser.add_argument("--csv_path", type=str, required=True,
+                        help="Path to CSV file with the inference data (columns: StudyInstanceUID, c)")
+    parser.add_argument("--checkpoint", type=str, required=True,
+                        help="Path to the trained model checkpoint (e.g., best_model.pth)")
+    parser.add_argument("--output_csv", type=str, default="inference_results.csv",
+                        help="Path to save the inference results CSV")
+    parser.add_argument("--batch_size", type=int, default=Config.batch_size,
+                        help="Batch size for inference")
+    parser.add_argument("--num_workers", type=int, default=Config.num_workers,
+                        help="Number of DataLoader workers on CPU")
+    args = parser.parse_args()
+
+    run_inference(args)
 
     
