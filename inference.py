@@ -80,3 +80,33 @@ class TimmModelWithAttention(nn.Module):
             nn.Linear(2*256, 256) # 2*256 because bidirectional
             , nn.BatchNorm1d(256), nn.Dropout(0.25), nn.LeakyReLu(0.1), nn.Linear(256, Config.out_dim)
         )
+
+
+    def forward(self, x):
+        """X: (batch_size, nperslice, C, H, W)"""
+
+        bs = x.size(0)
+
+        # Flatten the slices to single images
+        x = x.view(bs * Config.n_per_slice, Config.in_chans,Config.image_size, Config.image_size)
+        feat = self.encoder() # bs*nperslice, hdim
+
+        attention_weights1 = self.attention1(feat)
+        feat = feat* attention_weights1
+
+        
+        attention_weights2 = self.attention2(feat)
+        feat = feat* attention_weights2
+
+        
+        attention_weights3 = self.attention3(feat)
+        feat = feat* attention_weights3
+
+        feat = feat.view(bs, Config.n_per_slice, -1) # reshape to batch, sequence, feature_dim for the LSTM
+        feat, _ = self.lstm(feat)# output: (bs, n_perslice, 512)
+        feat = feat[:, -1, :] # using last time step featres
+        logits = self.head(feat)
+        return logits
+
+
+
