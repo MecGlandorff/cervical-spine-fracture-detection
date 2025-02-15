@@ -107,6 +107,49 @@ class TimmModelWithAttention(nn.Module):
         feat = feat[:, -1, :] # using last time step featres
         logits = self.head(feat)
         return logits
+    
+
+################################
+# Inference of the dataset
+################################
+
+class Inference(Dataset):
+    def __init__(self, df, transform):
+        """
+        Args:
+            df (DataFrame): DataFrame with columns 'StudyInstanceUID' and 'c' (vertebra id)
+            transform: Albumentations transform to apply on each slice.
+        """
+        self.df = df.reset_index(drop=True)
+        self.transform = transform
+    
+    def __len__(self):
+         return len(self.df)
+
+    def __getitem__(self, index):
+        row = self.df.iloc[index]
+        cid = row.c
+        uid = row.StudyInstanceUID
+        images = []
+
+        for slice_idx in range(Config.n_per_slice):
+            filepath = os.path.join(Config.data_dir, f'{uid}_{cid}_{slice_idx}.npy')
+            if not os.path.exists(filepath):
+                raise FileNotFoundError(f"File not found: {filepath}")
+            img = np.load(filepath)
+
+            # Apply transform
+            augmented = self.transform(image=img)
+            image = augmented['image']
+            
+            # Transpose and normalize
+            image = image.transpose(2, 0, 1).astype(np.float32) / 255.0
+            images.append(image)
+
+        # Stack to shape: (n_per_slice, C, H, W)
+        images = np.stack(images, axis=0)
+        return torch.tensor(images).float(), uid, cid
+ 
 
 
 
