@@ -151,4 +151,8 @@ class Inference(Dataset):
         return torch.tensor(images).float(), uid, cid
  
 
-
+#### Albumantations/transforms
+transform_val = albumentations.Compose(
+    [albumentations.Resize(Config.image_size, Config.image_size), albumentations.Normalize( mean=(0.485, 0.456, 0.406, 0.485, 0.456, 0.406),
+                                                                                           std=(0.229, 0.224, 0.225, 0.229, 0.224, 0.225))]
+)
