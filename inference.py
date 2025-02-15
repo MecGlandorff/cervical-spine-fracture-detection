@@ -156,3 +156,49 @@ transform_val = albumentations.Compose(
     [albumentations.Resize(Config.image_size, Config.image_size), albumentations.Normalize( mean=(0.485, 0.456, 0.406, 0.485, 0.456, 0.406),
                                                                                            std=(0.229, 0.224, 0.225, 0.229, 0.224, 0.225))]
 )
+
+
+####################
+# Inference
+###################
+
+def run_inference(args):
+    
+    df = pd.read_csv("args.csv_path")
+    
+    if 'StudyInstanceUID' not in df.columns or 'c' not in df.columns:
+        raise ValueError("CSV file doesn't contain correct info")
+    
+    dataset = Inference(df, transform=transform_val)
+    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
+
+
+    # MODEL LOADING!!!
+    model = TimmModelWithAttention(Config.backbone, pretrained=False).cuda() # sent to GPU
+    checkpoint = torch.load(args.checkpoint, map_location="cuda")
+    model.load_state_dict(checkpoint) # Model trained in previous stages is now loaded for inference
+    model.eval()
+
+    results = []
+    with torch.no_grad():
+        for images, uids, cids in tqdm(loader, desc="Running fnference"):
+            images = images.cuda()
+            logits = model(images).squeeze(-1)  # (batch_size,)
+            probs = torch.sigmoid(logits).cpu().numpy()
+            preds = (probs >= 0.5).astype(int)
+            for uid, cid, prob, pred in zip(uids, cids, probs, preds):
+                results.append({
+                    "StudyInstanceUID": uid,
+                    "c": int(cid),
+                    "probability": float(prob),
+                    "prediction": int(pred)
+                })
+
+    # Save the predictions
+    results_df = pd.DataFrame(results)
+    results_df.to_csv(args.output_csv, index=False)
+    print(f"Inference complete. Results are now saved to {args.output_csv}")
+
+
+
+    
